@@ -18,14 +18,32 @@ const scene = new THREE.Scene()
  * Textures
  */
 const textureLoader = new THREE.TextureLoader()
+const particleTexture = textureLoader.load('/textures/particles/9.png')
 
 //Particles
 //Geometry
-const particlesGeometry = new THREE.SphereGeometry(1, 32, 32)
+const particlesGeometry = new THREE.BufferGeometry()
+const count = 30000
+
+const position = new Float32Array(count * 3)
+for (let i = 0; i < count * 3; i++) {
+    position[i] = (Math.random() - 0.5) * 10
+}
+particlesGeometry.setAttribute(
+    'position',
+    new THREE.BufferAttribute(position, 3)
+)
+
 //Material
 const particlesMaterial = new THREE.PointsMaterial({
-    size: 0.02,
+    size: 0.1,
     sizeAttenuation: true,
+    color: "#ff88cc",
+    transparent: true,
+    alphaMap: particleTexture,
+    // alphaTest: 0.001,
+    depthTest: false,
+    blending: THREE.AdditiveBlending
 
 })
 //Points
@@ -40,8 +58,7 @@ const sizes = {
     height: window.innerHeight
 }
 
-window.addEventListener('resize', () =>
-{
+window.addEventListener('resize', () => {
     // Update sizes
     sizes.width = window.innerWidth
     sizes.height = window.innerHeight
@@ -81,8 +98,7 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
  */
 const clock = new THREE.Clock()
 
-const tick = () =>
-{
+const tick = () => {
     const elapsedTime = clock.getElapsedTime()
 
     // Update controls
