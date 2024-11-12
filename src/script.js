@@ -20,33 +20,32 @@ const scene = new THREE.Scene()
 const textureLoader = new THREE.TextureLoader()
 const particleTexture = textureLoader.load('/textures/particles/9.png')
 
-//Particles
-//Geometry
+// Particles
+// Geometry
 const particlesGeometry = new THREE.BufferGeometry()
-const count = 30000
+const count = 3000
 
-const position = new Float32Array(count * 3)
+const positions = new Float32Array(count * 3)
 for (let i = 0; i < count * 3; i++) {
-    position[i] = (Math.random() - 0.5) * 10
+    positions[i] = (Math.random() - 0.5) * 10
 }
 particlesGeometry.setAttribute(
     'position',
-    new THREE.BufferAttribute(position, 3)
+    new THREE.BufferAttribute(positions, 3)
 )
 
-//Material
+// Material
 const particlesMaterial = new THREE.PointsMaterial({
     size: 0.1,
     sizeAttenuation: true,
     color: "#ff88cc",
     transparent: true,
     alphaMap: particleTexture,
-    // alphaTest: 0.001,
     depthTest: false,
     blending: THREE.AdditiveBlending
-
 })
-//Points
+
+// Points
 const particles = new THREE.Points(particlesGeometry, particlesMaterial)
 scene.add(particles)
 
@@ -98,14 +97,34 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
  */
 const clock = new THREE.Clock()
 
+// Przenieś deklarację elapsedTime na zewnątrz funkcji tick
+let elapsedTime = 0.0;
+
+// Parametry dla GUI
+const params = {
+    elapsedTime: 0.0,
+    timeSpeed: 1.0, 
+};
+
+// Dodanie kontrolek do GUI
+gui.add(params, 'elapsedTime', 0, 10).onChange((value) => {
+    elapsedTime = value;
+});
+
+gui.add(params, 'timeSpeed', 0, 5); // Kontrolka do zmiany prędkości czasu
+
 const tick = () => {
-    const elapsedTime = clock.getElapsedTime()
-    //Update particles
-    // particles.rotation.y = elapsedTime * 0.2
-    for(let i = 0; i < count; i++){
-       const i3 = i * 3 
-       const x =  particlesGeometry.attributes.position.array[i3 ]
-       particlesGeometry.attributes.position.array[i3 + 1] = Math.sin(elapsedTime + x)
+    // Zwiększanie elapsedTime na podstawie timeSpeed
+    const deltaTime = clock.getDelta();
+    elapsedTime += deltaTime * params.timeSpeed;
+
+    // Aktualizacja cząstek
+    for (let i = 0; i < count; i++) {
+        const i3 = i * 3
+        const x = particlesGeometry.attributes.position.array[i3]
+        const z = particlesGeometry.attributes.position.array[i3 + 2]
+
+        particlesGeometry.attributes.position.array[i3 + 1] = ((Math.sin(x + elapsedTime)  * Math.cos(z + elapsedTime)))
     }
     particlesGeometry.attributes.position.needsUpdate = true
 
@@ -118,5 +137,4 @@ const tick = () => {
     // Call tick again on the next frame
     window.requestAnimationFrame(tick)
 }
-
 tick()
